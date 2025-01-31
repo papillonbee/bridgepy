@@ -8,7 +8,7 @@ from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, G
     GameInvalidBidStateException, GameInvalidTrickStateException, GameNotBidWinner, GameNotFinishedYetException,\
     GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyForTrickWinnerExcception,\
     GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GameInvalidPlayerTrickException
-from bridgepy.player import PlayerBid, PlayerId, PlayerTrick
+from bridgepy.player import PlayerAction, PlayerBid, PlayerHand, PlayerId, PlayerTrick
 
 
 @dataclass
@@ -54,7 +54,7 @@ class GameTrick:
 class GamePlayerSnapshot:
     game_id: GameId
     player_id: PlayerId
-    player_hand: list[Card]
+    player_hand: PlayerHand
     bid_turn: bool | None
     bids: list[PlayerBid]
     bid_winner: PlayerId | None
@@ -63,10 +63,22 @@ class GamePlayerSnapshot:
     tricks: list[GameTrick]
     score: dict[PlayerId, int] | None
 
+    def player_action(self) -> PlayerAction | None:
+        player_action = PlayerAction.VIEW
+        if self.bid_turn:
+            player_action = PlayerAction.BID
+        if self.player_id == self.bid_winner and self.partner is None:
+            player_action = PlayerAction.CHOOSE_PARTNER
+        if self.trick_turn:
+            player_action = PlayerAction.TRICK
+        if self.score is not None:
+            player_action = None
+        return player_action
+
 @dataclass
 class Game(Entity[GameId]):
     player_ids: list[PlayerId]
-    player_hands: dict[PlayerId, list[Card]] = field(default_factory = dict)
+    player_hands: dict[PlayerId, PlayerHand] = field(default_factory = dict)
     bids: list[PlayerBid] = field(default_factory = list)
     partner: Card | None = None
     tricks: list[GameTrick] = field(default_factory = list)
@@ -111,7 +123,11 @@ class Game(Entity[GameId]):
         for i in range(len(self.player_ids)):
             player_id: PlayerId = self.player_ids[i]
             cards = deck.cards[i * n_cards_per_player : (i + 1) * n_cards_per_player]
-            self.player_hands[player_id] = sorted(cards, reverse = True)
+            player_hand = PlayerHand(player_id = player_id, cards = sorted(cards, reverse = True))
+            if player_hand.points() < 4:
+                self.deal()
+                return
+            self.player_hands[player_id] = player_hand
 
     def next_bid_player_id(self) -> PlayerId:
         return self.player_ids[(len(self.bids) + 1) % 4]
@@ -193,7 +209,7 @@ class Game(Entity[GameId]):
             raise GameNotPlayerTrickTurnException()
         if not self.__valid_player_trick(player_trick):
             raise GameInvalidPlayerTrickException()
-        self.player_hands[player_trick.player_id].remove(player_trick.trick)
+        self.player_hands[player_trick.player_id].cards.remove(player_trick.trick)
         if len(self.tricks) == 0:
             self.tricks.append(GameTrick(player_tricks = [player_trick]))
             return
@@ -206,7 +222,7 @@ class Game(Entity[GameId]):
     def __valid_player_trick(self, player_trick: PlayerTrick) -> bool:
         if self.player_hands.get(player_trick.player_id) is None:
             return False
-        trick_from_player_hand = player_trick.trick in self.player_hands[player_trick.player_id]
+        trick_from_player_hand = player_trick.trick in self.player_hands[player_trick.player_id].cards
         if not trick_from_player_hand:
             return False
         trump_trick: bool = player_trick.trick.suit == self.trump_suit()
@@ -220,12 +236,12 @@ class Game(Entity[GameId]):
         first_suit: Suit = game_trick.first_suit()
         if player_trick.trick.suit == first_suit:
             return True
-        first_suit_cards = [card for card in self.player_hands[player_trick.player_id] if card.suit == first_suit]
+        first_suit_cards = [card for card in self.player_hands[player_trick.player_id].cards if card.suit == first_suit]
         return len(first_suit_cards) == 0
         
     def __can_trump(self, player_id: PlayerId) -> bool:
         trump_suit: Suit = self.trump_suit()
-        trump_cards = [card.suit == trump_suit for card in self.player_hands[player_id]]
+        trump_cards = [card.suit == trump_suit for card in self.player_hands[player_id].cards]
         if len(trump_cards) == 0:
             return False
         if len(self.tricks) == 0:
@@ -236,7 +252,7 @@ class Game(Entity[GameId]):
         first_suit: Suit = game_trick.first_suit()
         if first_suit == trump_suit:
             return True
-        first_suit_cards = [card for card in self.player_hands[player_id] if card.suit == first_suit]
+        first_suit_cards = [card for card in self.player_hands[player_id].cards if card.suit == first_suit]
         return len(first_suit_cards) == 0
 
     def __trump_broken(self) -> bool:

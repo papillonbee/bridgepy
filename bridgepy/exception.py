@@ -85,3 +85,18 @@ class GameInvalidPlayerTrickException(BizException):
     def __init__(self):
         self.message = "Game player tricks with invalid card!"
         super().__init__(self.message)
+
+class PlayerInvalidHandException(BizException):
+    def __init__(self):
+        self.message = "Player invalid hand!"
+        super().__init__(self.message)
+
+class BridgeGameAlreadyCreatedException(BizException):
+    def __init__(self):
+        self.message = "Bridge game already created!"
+        super().__init__(self.message)
+
+class BridgeGameNotFoundException(BizException):
+    def __init__(self):
+        self.message = "Bridge game not found!"
+        super().__init__(self.message)
