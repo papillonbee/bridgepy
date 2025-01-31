@@ -7,7 +7,7 @@ from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, G
     GameAuctionAlreadyFinishedException, GameAuctionNotFinishedException, GameDuplicatePlayers, GameInvalidBidException,\
     GameInvalidBidStateException, GameInvalidTrickStateException, GameNotBidWinner, GameNotFinishedYetException,\
     GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyForTrickWinnerExcception,\
-    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GameInvalidPlayerTrickException
+    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GameInvalidPlayerTrickException, GamePlayerNotFound
 from bridgepy.player import PlayerAction, PlayerBid, PlayerHand, PlayerId, PlayerTrick
 
 
@@ -84,6 +84,8 @@ class Game(Entity[GameId]):
     tricks: list[GameTrick] = field(default_factory = list)
 
     def player_snapshot(self, player_id: PlayerId) -> GamePlayerSnapshot:
+        if player_id not in self.player_ids:
+            raise GamePlayerNotFound()
         dealt: bool = self.dealt()
         game_bid_ready: bool = self.game_bid_ready()
         game_finished: bool = self.game_finished()
@@ -95,7 +97,7 @@ class Game(Entity[GameId]):
             bids = self.bids,
             bid_winner = self.bid_winner() if dealt and game_bid_ready else None,
             partner = self.partner,
-            trick_turn = self.next_trick_player_id() == player_id if dealt and game_bid_ready and not game_finished else None,
+            trick_turn = self.next_trick_player_id() == player_id if dealt and game_bid_ready and self.partner is not None and not game_finished else None,
             tricks = self.tricks,
             score = self.score() if game_finished else None
         )
@@ -106,6 +108,8 @@ class Game(Entity[GameId]):
         if len(set(self.player_ids + [player_id])) != len(self.player_ids + [player_id]):
             raise GameDuplicatePlayers()
         self.player_ids.append(player_id)
+        if self.ready_to_deal():
+            self.deal()
 
     def ready_to_deal(self) -> bool:
         return len(self.player_ids) == 4
@@ -156,10 +160,12 @@ class Game(Entity[GameId]):
         raise GameInvalidBidStateException()
     
     def bid(self, player_bid: PlayerBid) -> None:
-        if self.next_bid_player_id() != player_bid.player_id:
-            raise GameNotPlayerBidTurnException()
+        if player_bid.player_id not in self.player_ids:
+            raise GamePlayerNotFound()
         if self.game_bid_ready():
             raise GameAuctionAlreadyFinishedException()
+        if self.next_bid_player_id() != player_bid.player_id:
+            raise GameNotPlayerBidTurnException()
         if not self.valid_bid(player_bid.bid):
             raise GameInvalidBidException()
         self.bids.append(player_bid)
@@ -173,6 +179,8 @@ class Game(Entity[GameId]):
         return self.last_player_bid()
     
     def choose_partner(self, player_id: PlayerId, partner: Card) -> None:
+        if player_id not in self.player_ids:
+            raise GamePlayerNotFound()
         if self.bid_winner() != player_id:
             raise GameNotBidWinner()
         if self.partner is not None:
@@ -205,6 +213,8 @@ class Game(Entity[GameId]):
         return self.player_ids[(i + 1) % 4]
 
     def trick(self, player_trick: PlayerTrick) -> None:
+        if player_trick.player_id not in self.player_ids:
+            raise GamePlayerNotFound()
         if self.next_trick_player_id() != player_trick.player_id:
             raise GameNotPlayerTrickTurnException()
         if not self.__valid_player_trick(player_trick):
