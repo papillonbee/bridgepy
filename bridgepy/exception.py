@@ -1,102 +1,89 @@
 class BizException(Exception):
-    pass
+    def __init__(self, code: int, msg: str):
+        self.code: int = code
+        self.msg: str = msg
+        super().__init__(self.msg)
 
 class GameAlready4Players(BizException):
     def __init__(self):
-        self.message = "Game already has 4 players!"
-        super().__init__(self.message)
+        super().__init__(10001, "Game already has 4 players!")
 
 class GameDuplicatePlayers(BizException):
     def __init__(self):
-        self.message = "Game has duplicate players!"
-        super().__init__(self.message)
+        super().__init__(10002, "Game has duplicate players!")
+
+class GamePlayerNotFound(BizException):
+    def __init__(self):
+        super().__init__(10003, "Game player not found!")
 
 class GamePartnerAlreadyChosenException(BizException):
     def __init__(self):
-        self.message = "Partner already chosen!"
-        super().__init__(self.message)
+        super().__init__(10004, "Partner already chosen!")
 
 class GameNotReadyToDealYetException(BizException):
     def __init__(self):
-        self.message = "Game not ready to deal yet!"
-        super().__init__(self.message)
+        super().__init__(10005, "Game not ready to deal yet!")
 
 class GameAlreadyDealtException(BizException):
     def __init__(self):
-        self.message = "Game already dealt the cards!"
-        super().__init__(self.message)
+        super().__init__(10006, "Game already dealt the cards!")
 
 class GameInvalidBidStateException(BizException):
     def __init__(self):
-        self.message = "Game invalid bid state!"
-        super().__init__(self.message)    
+        super().__init__(10007, "Game invalid bid state!")
 
 class GameNotPlayerBidTurnException(BizException):
     def __init__(self):
-        self.message = "Game not player's turn to bid!"
-        super().__init__(self.message)
+        super().__init__(10008, "Game not player's turn to bid!")
 
 class GameAuctionNotFinishedException(BizException):
     def __init__(self):
-        self.message = "Game auction not finished yet!"
-        super().__init__(self.message)
+        super().__init__(10009, "Game auction not finished yet!")
 
 class GameAuctionAlreadyFinishedException(BizException):
     def __init__(self):
-        self.message = "Game auction already finished!"
-        super().__init__(self.message)
+        super().__init__(10010,  "Game auction already finished!")
 
 class GameInvalidBidException(BizException):
     def __init__(self):
-        self.message = "Game invalid bid!"
-        super().__init__(self.message)
+        super().__init__(10011, "Game invalid bid!")
 
 class GameNotBidWinner(BizException):
     def __init__(self):
-        self.message = "Game not bid winner!"
-        super().__init__(self.message)
+        super().__init__(10012, "Game not bid winner!")
 
 class GameNotReadyForTrickWinnerExcception(BizException):
     def __init__(self):
-        self.message = "Game not ready for trick winner!"
-        super().__init__(self.message)
+        super().__init__(10013, "Game not ready for trick winner!")
 
 class GameInvalidTrickStateException(BizException):
     def __init__(self):
-        self.message = "Game invalid trick state!"
-        super().__init__(self.message)
+        super().__init__(10014, "Game invalid trick state!")
 
 class GameAlreadyFinishedException(BizException):
     def __init__(self):
-        self.message = "Game already finished!"
-        super().__init__(self.message)
+        super().__init__(10015, "Game already finished!")
 
 class GameNotFinishedYetException(BizException):
     def __init__(self):
-        self.message = "Game not finished yet!"
-        super().__init__(self.message)
+        super().__init__(10016, "Game not finished yet!")
 
 class GameNotPlayerTrickTurnException(BizException):
     def __init__(self):
-        self.message = "Game not player's turn to trick!"
-        super().__init__(self.message)
+        super().__init__(10017, "Game not player's turn to trick!")
 
 class GameInvalidPlayerTrickException(BizException):
     def __init__(self):
-        self.message = "Game player tricks with invalid card!"
-        super().__init__(self.message)
+        super().__init__(10018, "Game player tricks with invalid card!")
 
 class PlayerInvalidHandException(BizException):
     def __init__(self):
-        self.message = "Player invalid hand!"
-        super().__init__(self.message)
+        super().__init__(10019, "Player invalid hand!")
 
 class BridgeGameAlreadyCreatedException(BizException):
     def __init__(self):
-        self.message = "Bridge game already created!"
-        super().__init__(self.message)
+        super().__init__(10020, "Bridge game already created!")
 
 class BridgeGameNotFoundException(BizException):
     def __init__(self):
-        self.message = "Bridge game not found!"
-        super().__init__(self.message)
+        super().__init__(10021, "Bridge game not found!")

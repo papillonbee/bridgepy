@@ -20,8 +20,6 @@ class BridgeClient:
     def join_game(self, player_id: PlayerId, game_id: GameId) -> None:
         game = self.__find_game(game_id)
         game.add_player(player_id)
-        if game.ready_to_deal():
-            game.deal()
         self.game_datastore.update(game)
     
     def view_game(self, player_id: PlayerId, game_id: GameId) -> GamePlayerSnapshot:

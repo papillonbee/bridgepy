@@ -7,7 +7,7 @@ from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, G
     GameNotFinishedYetException, GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyToDealYetException,\
     GameInvalidPlayerTrickException
 from bridgepy.game import Game, GameId, GameTrick
-from bridgepy.player import PlayerBid, PlayerId, PlayerTrick
+from bridgepy.player import PlayerBid, PlayerHand, PlayerId, PlayerTrick
 
 
 class TestPlayer(TestCase):
@@ -40,14 +40,15 @@ class TestPlayer(TestCase):
         game.add_player(PlayerId("222"))
         game.add_player(PlayerId("333"))
         game.add_player(PlayerId("444"))
-        game.deal()
         self.assertTrue(game.dealt())
 
-        for cards in game.player_hands.values():
+        for player_id in game.player_hands:
+            cards = game.player_hands[player_id].cards
             self.assertEqual(len(cards), 13)
             for i in range(len(cards) - 1):
                 self.assertTrue(cards[i] > cards[i + 1])
-        flattened = [item for sublist in game.player_hands.values() for item in sublist]
+        nested_list = [game.player_hands[player_id].cards for player_id in game.player_hands]
+        flattened = [item for sublist in nested_list for item in sublist]
         self.assertEqual(len(set(flattened)), 52)
 
     def test_GameNotReadyToDealYetException(self):
@@ -63,7 +64,6 @@ class TestPlayer(TestCase):
             game.add_player(PlayerId("222"))
             game.add_player(PlayerId("333"))
             game.add_player(PlayerId("444"))
-            game.deal()
             game.deal()
     
     def test_next_bid_player_id(self):
@@ -195,7 +195,7 @@ class TestPlayer(TestCase):
                     PlayerBid(player_id = PlayerId("333"), bid = None),
                     PlayerBid(player_id = PlayerId("444"), bid = None)
                 ],
-                player_hands = {PlayerId("222"): [Card.from_string("AC")]}
+                player_hands = {PlayerId("222"): PlayerHand(player_id = PlayerId("222"), cards = [Card.from_string("AC")])}
             )
             game.trick(PlayerTrick(player_id = PlayerId("222"), trick = Card.from_string("AS")))
 
