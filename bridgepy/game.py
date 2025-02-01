@@ -108,7 +108,7 @@ class Game(Entity[GameId]):
         for player_hand in self.player_hands:
             if player_hand.player_id == player_id:
                 return player_hand
-        raise PlayerHand(player_id, [])
+        return PlayerHand(player_id, [])
 
     def add_player(self, player_id: PlayerId) -> None:
         if len(self.player_ids) >= 4:
