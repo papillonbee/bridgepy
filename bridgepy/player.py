@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
 
 from bridgepy.bid import Bid
 from bridgepy.card import Card, Rank, Suit
@@ -51,14 +52,19 @@ class PlayerHand:
 @dataclass
 class PlayerBid:
     player_id: PlayerId
-    bid: Bid | None
+    bid: Optional[Bid]
 
 @dataclass
 class PlayerTrick:
     player_id: PlayerId
     trick: Card
 
-class PlayerAction(Enum):
+@dataclass
+class PlayerScore:
+    player_id: PlayerId
+    score: int
+
+class PlayerAction(str, Enum):
     VIEW = "VIEW"
     BID = "BID"
     CHOOSE_PARTNER = "CHOOSE_PARTNER"
