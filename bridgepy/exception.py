@@ -64,26 +64,22 @@ class GameAlreadyFinishedException(BizException):
     def __init__(self):
         super().__init__(10015, "Game already finished!")
 
-class GameNotFinishedYetException(BizException):
-    def __init__(self):
-        super().__init__(10016, "Game not finished yet!")
-
 class GameNotPlayerTrickTurnException(BizException):
     def __init__(self):
-        super().__init__(10017, "Game not player's turn to trick!")
+        super().__init__(10016, "Game not player's turn to trick!")
 
 class GameInvalidPlayerTrickException(BizException):
     def __init__(self):
-        super().__init__(10018, "Game player tricks with invalid card!")
+        super().__init__(10017, "Game player tricks with invalid card!")
 
 class PlayerInvalidHandException(BizException):
     def __init__(self):
-        super().__init__(10019, "Player invalid hand!")
+        super().__init__(10018, "Player invalid hand!")
 
 class BridgeGameAlreadyCreatedException(BizException):
     def __init__(self):
-        super().__init__(10020, "Bridge game already created!")
+        super().__init__(10019, "Bridge game already created!")
 
 class BridgeGameNotFoundException(BizException):
     def __init__(self):
-        super().__init__(10021, "Bridge game not found!")
+        super().__init__(10020, "Bridge game not found!")
