@@ -5,7 +5,7 @@ from random import shuffle
 
 
 @total_ordering
-class Rank(Enum):
+class Rank(str, Enum):
     TWO = "2"
     THREE = "3"
     FOUR = "4"
@@ -36,7 +36,7 @@ class Rank(Enum):
 _rank_order = {rank.value: i for i, rank in enumerate(Rank)}
 
 @total_ordering
-class Suit(Enum):
+class Suit(str, Enum):
     CLUB = "C"
     DIAMOND = "D"
     HEART = "H"

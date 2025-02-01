@@ -4,7 +4,7 @@ from bridgepy.bid import Bid
 from bridgepy.card import Card, Rank, Suit
 from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, GameAlreadyFinishedException, GameAuctionAlreadyFinishedException,\
     GameAuctionNotFinishedException, GameDuplicatePlayers, GameInvalidBidException, GameInvalidBidStateException, GameNotBidWinner,\
-    GameNotFinishedYetException, GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyToDealYetException,\
+    GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyToDealYetException,\
     GameInvalidPlayerTrickException
 from bridgepy.game import Game, GameId, GameTrick
 from bridgepy.player import PlayerBid, PlayerHand, PlayerId, PlayerTrick
@@ -42,12 +42,12 @@ class TestPlayer(TestCase):
         game.add_player(PlayerId("444"))
         self.assertTrue(game.dealt())
 
-        for player_id in game.player_hands:
-            cards = game.player_hands[player_id].cards
+        for player_hand in game.player_hands:
+            cards = player_hand.cards
             self.assertEqual(len(cards), 13)
             for i in range(len(cards) - 1):
                 self.assertTrue(cards[i] > cards[i + 1])
-        nested_list = [game.player_hands[player_id].cards for player_id in game.player_hands]
+        nested_list = [player_hand.cards for player_hand in game.player_hands]
         flattened = [item for sublist in nested_list for item in sublist]
         self.assertEqual(len(set(flattened)), 52)
 
@@ -193,16 +193,19 @@ class TestPlayer(TestCase):
                     PlayerBid(player_id = PlayerId("111"), bid = Bid.from_string("1C")),
                     PlayerBid(player_id = PlayerId("222"), bid = None),
                     PlayerBid(player_id = PlayerId("333"), bid = None),
-                    PlayerBid(player_id = PlayerId("444"), bid = None)
+                    PlayerBid(player_id = PlayerId("444"), bid = None),
                 ],
-                player_hands = {PlayerId("222"): PlayerHand(player_id = PlayerId("222"), cards = [Card.from_string("AC")])}
+                player_hands = [
+                    PlayerHand(player_id = PlayerId("222"), cards = [Card.from_string("AC")]),
+                ]
             )
             game.trick(PlayerTrick(player_id = PlayerId("222"), trick = Card.from_string("AS")))
 
-    def test_GameNotFinishedYetException(self):
-        with self.assertRaises(GameNotFinishedYetException):
-            game = Game(id = GameId("1"), player_ids = [])
-            game.score()
+    def test_scores(self):
+        game = Game(id = GameId("1"), player_ids = [PlayerId("111"), PlayerId("222"), PlayerId("333"), PlayerId("444")])
+        self.assertEqual(len(game.scores()), 4)
+        for player_score in game.scores():
+            self.assertEqual(player_score.score, 0)
 
 if __name__ == '__main__':
     main()

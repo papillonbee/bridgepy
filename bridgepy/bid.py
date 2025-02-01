@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import total_ordering
+from typing import Optional
 
 from bridgepy.card import Suit
 
@@ -8,7 +9,7 @@ from bridgepy.card import Suit
 @dataclass
 class Bid:
     level: int
-    suit: Suit | None
+    suit: Optional[Suit]
 
     def __lt__(self, other) -> bool:
         if not isinstance(other, Bid):
