@@ -16,6 +16,9 @@ class BridgeClient:
         if game is not None:
             raise BridgeGameAlreadyCreatedException()
         self.game_datastore.insert(Game(id = game_id, player_ids = [player_id]))
+    
+    def delete_game(self, game_id: GameId) -> None:
+        self.game_datastore.delete(game_id)
 
     def join_game(self, player_id: PlayerId, game_id: GameId) -> None:
         game = self.__find_game(game_id)
