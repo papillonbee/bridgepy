@@ -4,6 +4,14 @@
 [Visit repository on Github](https://github.com/papillonbee/bridgepy)
 
 ---
+
+## Game state
+
+The heart of this project is in the game state below
+
+<img src="https://gist.githubusercontent.com/papillonbee/7f512954267c8340eb20b52ef8016ccf/raw/8673f95b534665510e9a286cb3d92d43dc16cb77/bridgepy-game-state.svg">
+
+---
 ## Quick Guide
 ```python
 from bridgepy.datastore import Datastore
