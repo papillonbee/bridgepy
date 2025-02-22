@@ -152,7 +152,7 @@ class TestPlayer(TestCase):
         for _ in range(3):
             player_id = game.next_bid_player_id()
             game.bid(PlayerBid(player_id = player_id, bid = None))
-        game.choose_partner(game.bid_winner(), Card.from_string("AC"))
+        game.choose_partner(game.bid_winner().player_id, Card.from_string("AC"))
         self.assertEqual(game.partner, Card(rank = Rank.ACE, suit = Suit.CLUB))
         self.assertEqual(game.partner.suit, Suit.CLUB)
 
