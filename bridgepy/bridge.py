@@ -21,30 +21,30 @@ class BridgeClient:
         self.game_datastore.delete(game_id)
 
     def join_game(self, player_id: PlayerId, game_id: GameId) -> None:
-        game = self.__find_game(game_id)
+        game = self.find_game(game_id)
         game.add_player(player_id)
         self.game_datastore.update(game)
     
     def view_game(self, player_id: PlayerId, game_id: GameId) -> GamePlayerSnapshot:
-        game = self.__find_game(game_id)
+        game = self.find_game(game_id)
         return game.player_snapshot(player_id)
     
     def bid(self, player_id: PlayerId, game_id: GameId, bid: Bid) -> None:
-        game = self.__find_game(game_id)
+        game = self.find_game(game_id)
         game.bid(PlayerBid(player_id = player_id, bid = bid))
         self.game_datastore.update(game)
     
     def choose_partner(self, player_id: PlayerId, game_id: GameId, partner: Card) -> None:
-        game = self.__find_game(game_id)
+        game = self.find_game(game_id)
         game.choose_partner(player_id, partner)
         self.game_datastore.update(game)
     
     def trick(self, player_id: PlayerId, game_id: GameId, trick: Card) -> None:
-        game = self.__find_game(game_id)
+        game = self.find_game(game_id)
         game.trick(PlayerTrick(player_id = player_id, trick = trick))
         self.game_datastore.update(game)
 
-    def __find_game(self, game_id: GameId) -> Game:
+    def find_game(self, game_id: GameId) -> Game:
         game = self.game_datastore.query(game_id)
         if game is None:
             raise BridgeGameNotFoundException()
