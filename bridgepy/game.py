@@ -60,6 +60,7 @@ class GamePlayerSnapshot:
     player_hand: PlayerHand
     bids: list[PlayerBid]
     bid_winner: Optional[PlayerId]
+    trump_suit: Optional[Suit]
     partner: Optional[Card]
     tricks: list[GameTrick]
     scores: list[PlayerScore]
@@ -100,6 +101,7 @@ class Game(Entity[GameId]):
             player_hand = self.__find_player_hand(player_id),
             bids = self.bids,
             bid_winner = bid_winner,
+            trump_suit = self.trump_suit() if self.game_bid_ready() else None,
             partner = self.partner,
             tricks = self.tricks,
             scores = self.scores(),
