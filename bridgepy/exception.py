@@ -8,9 +8,9 @@ class GameAlready4Players(BizException):
     def __init__(self):
         super().__init__(10001, "Game already has 4 players!")
 
-class GameDuplicatePlayers(BizException):
+class GamePlayerAlreadyAdded(BizException):
     def __init__(self):
-        super().__init__(10002, "Game has duplicate players!")
+        super().__init__(10002, "Game player already added!")
 
 class GamePlayerNotFound(BizException):
     def __init__(self):

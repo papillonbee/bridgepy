@@ -5,10 +5,11 @@ from bridgepy.bid import Bid
 from bridgepy.card import Card, Deck, Suit
 from bridgepy.entity import Entity
 from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, GameAlreadyFinishedException,\
-    GameAuctionAlreadyFinishedException, GameAuctionNotFinishedException, GameDuplicatePlayers, GameInvalidBidException,\
+    GameAuctionAlreadyFinishedException, GameAuctionNotFinishedException, GameInvalidBidException,\
     GameInvalidBidStateException, GameInvalidTrickStateException, GameNotBidWinner,\
     GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyForTrickWinnerExcception,\
-    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GameInvalidPlayerTrickException, GamePlayerNotFound
+    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GameInvalidPlayerTrickException,\
+    GamePlayerAlreadyAdded, GamePlayerNotFound
 from bridgepy.player import PlayerAction, PlayerBid, PlayerHand, PlayerId, PlayerScore, PlayerTrick
 
 
@@ -59,6 +60,7 @@ class GamePlayerSnapshot:
     player_hand: PlayerHand
     bids: list[PlayerBid]
     bid_winner: Optional[PlayerId]
+    trump_suit: Optional[Suit]
     partner: Optional[Card]
     tricks: list[GameTrick]
     scores: list[PlayerScore]
@@ -99,6 +101,7 @@ class Game(Entity[GameId]):
             player_hand = self.__find_player_hand(player_id),
             bids = self.bids,
             bid_winner = bid_winner,
+            trump_suit = self.trump_suit() if self.game_bid_ready() else None,
             partner = self.partner,
             tricks = self.tricks,
             scores = self.scores(),
@@ -111,10 +114,10 @@ class Game(Entity[GameId]):
         return PlayerHand(player_id, [])
 
     def add_player(self, player_id: PlayerId) -> None:
+        if player_id in self.player_ids:
+            raise GamePlayerAlreadyAdded()
         if len(self.player_ids) >= 4:
             raise GameAlready4Players()
-        if len(set(self.player_ids + [player_id])) != len(self.player_ids + [player_id]):
-            raise GameDuplicatePlayers()
         self.player_ids.append(player_id)
         if self.ready_to_deal():
             self.deal()

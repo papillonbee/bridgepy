@@ -3,7 +3,7 @@ from unittest import TestCase, main
 from bridgepy.bid import Bid
 from bridgepy.card import Card, Rank, Suit
 from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, GameAlreadyFinishedException, GameAuctionAlreadyFinishedException,\
-    GameAuctionNotFinishedException, GameDuplicatePlayers, GameInvalidBidException, GameInvalidBidStateException, GameNotBidWinner,\
+    GameAuctionNotFinishedException, GamePlayerAlreadyAdded, GameInvalidBidException, GameInvalidBidStateException, GameNotBidWinner,\
     GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyToDealYetException,\
     GameInvalidPlayerTrickException
 from bridgepy.game import Game, GameId, GameTrick
@@ -24,7 +24,7 @@ class TestPlayer(TestCase):
             game.add_player(PlayerId("555"))
 
     def test_GameDuplicatePlayers(self):
-        with self.assertRaises(GameDuplicatePlayers):
+        with self.assertRaises(GamePlayerAlreadyAdded):
             game = Game(id = GameId("1"), player_ids = [PlayerId("111")])
             game.add_player(PlayerId("111"))
     
