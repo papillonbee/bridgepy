@@ -5,10 +5,11 @@ from bridgepy.bid import Bid
 from bridgepy.card import Card, Deck, Suit
 from bridgepy.entity import Entity
 from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, GameAlreadyFinishedException,\
-    GameAuctionAlreadyFinishedException, GameAuctionNotFinishedException, GameDuplicatePlayers, GameInvalidBidException,\
+    GameAuctionAlreadyFinishedException, GameAuctionNotFinishedException, GameInvalidBidException,\
     GameInvalidBidStateException, GameInvalidTrickStateException, GameNotBidWinner,\
     GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyForTrickWinnerExcception,\
-    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GameInvalidPlayerTrickException, GamePlayerNotFound
+    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GameInvalidPlayerTrickException,\
+    GamePlayerAlreadyAdded, GamePlayerNotFound
 from bridgepy.player import PlayerAction, PlayerBid, PlayerHand, PlayerId, PlayerScore, PlayerTrick
 
 
@@ -111,10 +112,10 @@ class Game(Entity[GameId]):
         return PlayerHand(player_id, [])
 
     def add_player(self, player_id: PlayerId) -> None:
+        if player_id in self.player_ids:
+            raise GamePlayerAlreadyAdded()
         if len(self.player_ids) >= 4:
             raise GameAlready4Players()
-        if len(set(self.player_ids + [player_id])) != len(self.player_ids + [player_id]):
-            raise GameDuplicatePlayers()
         self.player_ids.append(player_id)
         if self.ready_to_deal():
             self.deal()
