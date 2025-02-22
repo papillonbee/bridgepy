@@ -59,8 +59,7 @@ class GamePlayerSnapshot:
     player_action: Optional[PlayerAction]
     player_hand: PlayerHand
     bids: list[PlayerBid]
-    bid_winner: Optional[PlayerId]
-    trump_suit: Optional[Suit]
+    bid_winner: Optional[PlayerBid]
     partner: Optional[Card]
     tricks: list[GameTrick]
     scores: list[PlayerScore]
@@ -87,7 +86,7 @@ class Game(Entity[GameId]):
         player_action = PlayerAction.VIEW
         if bid_turn:
             player_action = PlayerAction.BID
-        if player_id == bid_winner and self.partner is None:
+        if player_id == bid_winner.player_id and self.partner is None:
             player_action = PlayerAction.CHOOSE_PARTNER
         if trick_turn:
             player_action = PlayerAction.TRICK
@@ -101,7 +100,6 @@ class Game(Entity[GameId]):
             player_hand = self.__find_player_hand(player_id),
             bids = self.bids,
             bid_winner = bid_winner,
-            trump_suit = self.trump_suit() if self.game_bid_ready() else None,
             partner = self.partner,
             tricks = self.tricks,
             scores = self.scores(),
@@ -183,10 +181,7 @@ class Game(Entity[GameId]):
             raise GameInvalidBidException()
         self.bids.append(player_bid)
 
-    def bid_winner(self) -> PlayerId:
-        return self.__bid_winner().player_id
-
-    def __bid_winner(self) -> PlayerBid:
+    def bid_winner(self) -> PlayerBid:
         if not self.game_bid_ready():
             raise GameAuctionNotFinishedException()
         return self.last_player_bid()
@@ -194,14 +189,14 @@ class Game(Entity[GameId]):
     def choose_partner(self, player_id: PlayerId, partner: Card) -> None:
         if player_id not in self.player_ids:
             raise GamePlayerNotFound()
-        if self.bid_winner() != player_id:
+        if self.bid_winner().player_id != player_id:
             raise GameNotBidWinner()
         if self.partner is not None:
             raise GamePartnerAlreadyChosenException()
         self.partner = partner
 
     def trump_suit(self) -> Suit:
-        return self.__bid_winner().bid.suit
+        return self.bid_winner().bid.suit
 
     def game_finished(self) -> bool:
         return len(self.tricks) == 13 and self.tricks[-1].ready_for_trick_winner()
@@ -211,7 +206,7 @@ class Game(Entity[GameId]):
             raise GameAlreadyFinishedException()
         trump_suit: Suit = self.trump_suit()
         if len(self.tricks) == 0:
-            bid_winner_player_id: PlayerId = self.bid_winner()
+            bid_winner_player_id: PlayerId = self.bid_winner().player_id
             return self.next_player(bid_winner_player_id) if trump_suit is not None else bid_winner_player_id
         game_trick: GameTrick = self.tricks[-1]
         if game_trick.ready_for_trick_winner():
