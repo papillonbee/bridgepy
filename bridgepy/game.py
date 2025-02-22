@@ -86,7 +86,7 @@ class Game(Entity[GameId]):
         player_action = PlayerAction.VIEW
         if bid_turn:
             player_action = PlayerAction.BID
-        if player_id == bid_winner.player_id and self.partner is None:
+        if bid_winner is not None and player_id == bid_winner.player_id and self.partner is None:
             player_action = PlayerAction.CHOOSE_PARTNER
         if trick_turn:
             player_action = PlayerAction.TRICK
