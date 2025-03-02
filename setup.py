@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="bridgepy",
-    version="0.0.8",
+    version="0.0.9",
     author="Papan Yongmalwong",
     author_email="papillonbee@gmail.com",
     description="bridgepy is a python package for playing floating bridge!",
