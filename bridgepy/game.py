@@ -63,6 +63,7 @@ class GamePlayerSnapshot:
     partner: Optional[Card]
     tricks: list[GameTrick]
     scores: list[PlayerScore]
+    player_turn: Optional[PlayerId]
 
 @dataclass
 class Game(Entity[GameId]):
@@ -93,6 +94,14 @@ class Game(Entity[GameId]):
         if game_finished:
             player_action = None
 
+        player_turn = None
+        if dealt and not game_bid_ready:
+            player_turn = self.next_bid_player_id()
+        if bid_winner is not None and self.partner is None:
+            player_turn = bid_winner.player_id
+        if dealt and game_bid_ready and self.partner is not None and not game_finished:
+            player_turn = self.next_trick_player_id()
+
         return GamePlayerSnapshot(
             game_id = self.id,
             player_id = player_id,
@@ -103,6 +112,7 @@ class Game(Entity[GameId]):
             partner = self.partner,
             tricks = self.tricks,
             scores = self.scores(),
+            player_turn = player_turn,
         )
     
     def __find_player_hand(self, player_id: PlayerId) -> PlayerHand:
