@@ -6,9 +6,9 @@ from bridgepy.card import Card, Deck, Suit
 from bridgepy.entity import Entity
 from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, GameAlreadyFinishedException,\
     GameAuctionAlreadyFinishedException, GameAuctionNotFinishedException, GameInvalidBidException,\
-    GameInvalidBidStateException, GameInvalidTrickStateException, GameNotBidWinner,\
+    GameInvalidBidStateException, GameInvalidPlayerTrickException, GameInvalidTrickStateException, GameNotBidWinner,\
     GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyForTrickWinnerExcception,\
-    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GameInvalidPlayerTrickException,\
+    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GamePartnerNotChosenYetException,\
     GamePlayerAlreadyAdded, GamePlayerNotFound
 from bridgepy.player import PlayerAction, PlayerBid, PlayerHand, PlayerId, PlayerScore, PlayerTrick
 
@@ -61,6 +61,7 @@ class GamePlayerSnapshot:
     bids: list[PlayerBid]
     bid_winner: Optional[PlayerBid]
     partner: Optional[Card]
+    partner_player_id: Optional[PlayerId]
     tricks: list[GameTrick]
     scores: list[PlayerScore]
     player_turn: Optional[PlayerId]
@@ -72,6 +73,7 @@ class Game(Entity[GameId]):
     player_hands: list[PlayerHand] = field(default_factory = list)
     bids: list[PlayerBid] = field(default_factory = list)
     partner: Optional[Card] = None
+    partner_player_id: Optional[PlayerId] = None
     tricks: list[GameTrick] = field(default_factory = list)
 
     def player_snapshot(self, player_id: PlayerId) -> GamePlayerSnapshot:
@@ -110,6 +112,7 @@ class Game(Entity[GameId]):
             bids = self.bids,
             bid_winner = bid_winner,
             partner = self.partner,
+            partner_player_id = self.partner_player_id,
             tricks = self.tricks,
             scores = self.scores(),
             player_turn = player_turn,
@@ -205,8 +208,11 @@ class Game(Entity[GameId]):
             raise GamePartnerAlreadyChosenException()
         self.partner = partner
 
-    def trump_suit(self) -> Suit:
-        return self.bid_winner().bid.suit
+    def trump_suit(self) -> Suit | None:
+        bid_winner = self.bid_winner()
+        if bid_winner.bid is None:
+            raise GameInvalidBidStateException()
+        return bid_winner.bid.suit
 
     def game_finished(self) -> bool:
         return len(self.tricks) == 13 and self.tricks[-1].ready_for_trick_winner()
@@ -214,7 +220,7 @@ class Game(Entity[GameId]):
     def next_trick_player_id(self) -> PlayerId:
         if self.game_finished():
             raise GameAlreadyFinishedException()
-        trump_suit: Suit = self.trump_suit()
+        trump_suit: Suit | None = self.trump_suit()
         if len(self.tricks) == 0:
             bid_winner_player_id: PlayerId = self.bid_winner().player_id
             return self.next_player(bid_winner_player_id) if trump_suit is not None else bid_winner_player_id
@@ -237,6 +243,8 @@ class Game(Entity[GameId]):
             raise GameNotPlayerTrickTurnException()
         if not self.__valid_player_trick(player_trick):
             raise GameInvalidPlayerTrickException()
+        if self.__partner_revealed(player_trick):
+            self.partner_player_id = player_trick.player_id
         self.__find_player_hand(player_trick.player_id).cards.remove(player_trick.trick)
         if len(self.tricks) == 0:
             self.tricks.append(GameTrick(player_tricks = [player_trick]))
@@ -246,6 +254,11 @@ class Game(Entity[GameId]):
            self.tricks.append(GameTrick(player_tricks = [player_trick]))
            return
         game_trick.player_tricks.append(player_trick)
+    
+    def __partner_revealed(self, player_trick: PlayerTrick) -> bool:
+        if self.partner is None:
+            raise GamePartnerNotChosenYetException()
+        return player_trick.trick == self.partner
 
     def __valid_player_trick(self, player_trick: PlayerTrick) -> bool:
         player_hand: PlayerHand = self.__find_player_hand(player_trick.player_id)
@@ -268,7 +281,7 @@ class Game(Entity[GameId]):
         
     def __can_trump(self, player_id: PlayerId) -> bool:
         player_hand: PlayerHand = self.__find_player_hand(player_id)
-        trump_suit: Suit = self.trump_suit()
+        trump_suit: Suit | None = self.trump_suit()
         trump_cards = [card.suit == trump_suit for card in player_hand.cards]
         if len(trump_cards) == 0:
             return False
@@ -300,4 +313,25 @@ class Game(Entity[GameId]):
                 if player_score.player_id == trick_winner_player_id:
                     player_score.score += 1
                     break
+        self.__derive_won_flag(player_scores)
         return player_scores
+    
+    def __derive_won_flag(self, player_scores: list[PlayerScore]) -> None:
+        if self.partner_player_id is None:
+            return
+        bid_winner: PlayerBid = self.bid_winner()
+        if bid_winner.bid is None:
+            raise GameInvalidBidStateException()
+        bid_winner_player_ids: set[PlayerId] = {bid_winner.player_id, self.partner_player_id}
+        opponent_player_ids: set[PlayerId] = set(self.player_ids) - set(bid_winner_player_ids)
+        bid_winner_total_score: int = sum([player_score.score for player_score in player_scores if player_score.player_id in bid_winner_player_ids])
+        opponent_total_score: int = sum([player_score.score for player_score in player_scores if player_score.player_id in opponent_player_ids])
+        if bid_winner_total_score >= bid_winner.bid.level + 6:
+            for player_score in player_scores:
+                if player_score.player_id in bid_winner_player_ids:
+                    player_score.won = True
+            return
+        if opponent_total_score >= 13 - (bid_winner.bid.level + 6) + 1:
+            for player_score in player_scores:
+                if player_score.player_id in opponent_player_ids:
+                    player_score.won = True

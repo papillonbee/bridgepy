@@ -83,3 +83,7 @@ class BridgeGameAlreadyCreatedException(BizException):
 class BridgeGameNotFoundException(BizException):
     def __init__(self):
         super().__init__(10020, "Bridge game not found!")
+
+class GamePartnerNotChosenYetException(BizException):
+    def __init__(self):
+        super().__init__(10021, "Partner not chosen yet!")
