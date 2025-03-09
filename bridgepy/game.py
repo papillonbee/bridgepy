@@ -205,8 +205,11 @@ class Game(Entity[GameId]):
             raise GamePartnerAlreadyChosenException()
         self.partner = partner
 
-    def trump_suit(self) -> Suit:
-        return self.bid_winner().bid.suit
+    def trump_suit(self) -> Suit | None:
+        bid_winner = self.bid_winner()
+        if bid_winner.bid is None:
+            raise GameInvalidBidStateException()
+        return bid_winner.bid.suit
 
     def game_finished(self) -> bool:
         return len(self.tricks) == 13 and self.tricks[-1].ready_for_trick_winner()
@@ -214,7 +217,7 @@ class Game(Entity[GameId]):
     def next_trick_player_id(self) -> PlayerId:
         if self.game_finished():
             raise GameAlreadyFinishedException()
-        trump_suit: Suit = self.trump_suit()
+        trump_suit: Suit | None = self.trump_suit()
         if len(self.tricks) == 0:
             bid_winner_player_id: PlayerId = self.bid_winner().player_id
             return self.next_player(bid_winner_player_id) if trump_suit is not None else bid_winner_player_id
@@ -268,7 +271,7 @@ class Game(Entity[GameId]):
         
     def __can_trump(self, player_id: PlayerId) -> bool:
         player_hand: PlayerHand = self.__find_player_hand(player_id)
-        trump_suit: Suit = self.trump_suit()
+        trump_suit: Suit | None = self.trump_suit()
         trump_cards = [card.suit == trump_suit for card in player_hand.cards]
         if len(trump_cards) == 0:
             return False
