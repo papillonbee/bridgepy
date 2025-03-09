@@ -6,9 +6,9 @@ from bridgepy.card import Card, Deck, Suit
 from bridgepy.entity import Entity
 from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, GameAlreadyFinishedException,\
     GameAuctionAlreadyFinishedException, GameAuctionNotFinishedException, GameInvalidBidException,\
-    GameInvalidBidStateException, GameInvalidTrickStateException, GameNotBidWinner,\
+    GameInvalidBidStateException, GameInvalidPlayerTrickException, GameInvalidTrickStateException, GameNotBidWinner,\
     GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException, GameNotReadyForTrickWinnerExcception,\
-    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GameInvalidPlayerTrickException,\
+    GameNotReadyToDealYetException, GamePartnerAlreadyChosenException, GamePartnerNotChosenYetException,\
     GamePlayerAlreadyAdded, GamePlayerNotFound
 from bridgepy.player import PlayerAction, PlayerBid, PlayerHand, PlayerId, PlayerScore, PlayerTrick
 
@@ -61,6 +61,7 @@ class GamePlayerSnapshot:
     bids: list[PlayerBid]
     bid_winner: Optional[PlayerBid]
     partner: Optional[Card]
+    partner_player_id: Optional[PlayerId]
     tricks: list[GameTrick]
     scores: list[PlayerScore]
     player_turn: Optional[PlayerId]
@@ -72,6 +73,7 @@ class Game(Entity[GameId]):
     player_hands: list[PlayerHand] = field(default_factory = list)
     bids: list[PlayerBid] = field(default_factory = list)
     partner: Optional[Card] = None
+    partner_player_id: Optional[PlayerId] = None
     tricks: list[GameTrick] = field(default_factory = list)
 
     def player_snapshot(self, player_id: PlayerId) -> GamePlayerSnapshot:
@@ -110,6 +112,7 @@ class Game(Entity[GameId]):
             bids = self.bids,
             bid_winner = bid_winner,
             partner = self.partner,
+            partner_player_id = self.partner_player_id,
             tricks = self.tricks,
             scores = self.scores(),
             player_turn = player_turn,
@@ -240,6 +243,8 @@ class Game(Entity[GameId]):
             raise GameNotPlayerTrickTurnException()
         if not self.__valid_player_trick(player_trick):
             raise GameInvalidPlayerTrickException()
+        if self.__partner_revealed(player_trick):
+            self.partner_player_id = player_trick.player_id
         self.__find_player_hand(player_trick.player_id).cards.remove(player_trick.trick)
         if len(self.tricks) == 0:
             self.tricks.append(GameTrick(player_tricks = [player_trick]))
@@ -249,6 +254,11 @@ class Game(Entity[GameId]):
            self.tricks.append(GameTrick(player_tricks = [player_trick]))
            return
         game_trick.player_tricks.append(player_trick)
+    
+    def __partner_revealed(self, player_trick: PlayerTrick) -> bool:
+        if self.partner is None:
+            raise GamePartnerNotChosenYetException()
+        return player_trick.trick == self.partner
 
     def __valid_player_trick(self, player_trick: PlayerTrick) -> bool:
         player_hand: PlayerHand = self.__find_player_hand(player_trick.player_id)
