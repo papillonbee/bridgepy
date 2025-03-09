@@ -313,4 +313,25 @@ class Game(Entity[GameId]):
                 if player_score.player_id == trick_winner_player_id:
                     player_score.score += 1
                     break
+        self.__derive_won_flag(player_scores)
         return player_scores
+    
+    def __derive_won_flag(self, player_scores: list[PlayerScore]) -> None:
+        if self.partner_player_id is None:
+            return
+        bid_winner: PlayerBid = self.bid_winner()
+        if bid_winner.bid is None:
+            raise GameInvalidBidStateException()
+        bid_winner_player_ids: set[PlayerId] = {bid_winner.player_id, self.partner_player_id}
+        opponent_player_ids: set[PlayerId] = set(self.player_ids) - set(bid_winner_player_ids)
+        bid_winner_total_score: int = sum([player_score.score for player_score in player_scores if player_score.player_id in bid_winner_player_ids])
+        opponent_total_score: int = sum([player_score.score for player_score in player_scores if player_score.player_id in opponent_player_ids])
+        if bid_winner_total_score >= bid_winner.bid.level + 6:
+            for player_score in player_scores:
+                if player_score.player_id in bid_winner_player_ids:
+                    player_score.won = True
+            return
+        if opponent_total_score >= 13 - (bid_winner.bid.level + 6) + 1:
+            for player_score in player_scores:
+                if player_score.player_id in opponent_player_ids:
+                    player_score.won = True

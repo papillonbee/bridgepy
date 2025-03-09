@@ -63,6 +63,7 @@ class PlayerTrick:
 class PlayerScore:
     player_id: PlayerId
     score: int
+    won: bool = False
 
 class PlayerAction(str, Enum):
     VIEW = "VIEW"
