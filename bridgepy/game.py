@@ -290,6 +290,8 @@ class Game(Entity[GameId]):
         game_trick: GameTrick = self.tricks[-1]
         if game_trick.ready_for_trick_winner():
             return self.__trump_broken() or all(trump_cards)
+        if len(self.tricks) == 1:
+            return False
         first_suit: Suit = game_trick.first_suit()
         if first_suit == trump_suit:
             return True
