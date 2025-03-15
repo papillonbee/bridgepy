@@ -170,16 +170,19 @@ class Game(Entity[GameId]):
                 continue
             if player_bid.bid == Bid(level = 7, suit = None):
                 return True
-        return len(self.bids) >= 3 and all(player_bid.bid is None for player_bid in self.bids[-3:])
+        some_player_bid: bool = self.some_player_bid()
+        return some_player_bid and len(self.bids) >= 3 and all(player_bid.bid is None for player_bid in self.bids[-3:])
 
     def valid_bid(self, bid: Bid | None) -> bool:
-        if len(self.bids) == 0:
-            if bid is None:
-                return False
-            return bid.level >= 1 and bid.level <= 7
         if bid is None:
             return True
-        return bid.level >= 1 and bid.level <= 7 and bid > self.last_player_bid().bid
+        valid_bid: bool = bid.level >= 1 and bid.level <= 7
+        if not self.some_player_bid():
+            return valid_bid
+        return valid_bid and bid > self.last_player_bid().bid
+    
+    def some_player_bid(self) -> bool:
+        return any(player_bid.bid is not None for player_bid in self.bids)
 
     def last_player_bid(self) -> PlayerBid:
         for player_bid in reversed(self.bids):
@@ -197,6 +200,11 @@ class Game(Entity[GameId]):
         if not self.valid_bid(player_bid.bid):
             raise GameInvalidBidException()
         self.bids.append(player_bid)
+        if self.__all_players_pass():
+            self.__reset_game()
+    
+    def __all_players_pass(self) -> bool:
+        return len(self.bids) == 4 and all([player_bid.bid is None for player_bid in self.bids])
 
     def bid_winner(self) -> PlayerBid:
         if not self.game_bid_ready():
