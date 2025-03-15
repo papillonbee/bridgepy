@@ -43,6 +43,11 @@ class BridgeClient:
         game = self.find_game(game_id)
         game.trick(PlayerTrick(player_id = player_id, trick = trick))
         self.game_datastore.update(game)
+    
+    def reset_game(self, player_id: PlayerId, game_id: GameId) -> None:
+        game = self.find_game(game_id)
+        game.reset(player_id)
+        self.game_datastore.update(game)
 
     def find_game(self, game_id: GameId) -> Game:
         game = self.game_datastore.query(game_id)
