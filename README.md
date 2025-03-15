@@ -91,23 +91,22 @@ player_id = player_id2 # replace with player_id1, player_id2, player_id3, player
 # player polls for their game snapshot (maybe every 5 seconds)
 snapshot = client.view_game(player_id, game_id)
 print(snapshot)
-if snapshot.player_action == PlayerAction.VIEW:
-    # player keeps polling for their game snapshot
-    print("view")
-if snapshot.player_action == PlayerAction.BID:
+if PlayerAction.BID in snapshot.player_actions:
     print("bid turn")
     bid_input = input() # 1C for 1 club, 2NT for 2 no trump, None for pass
     bid = None if bid_input == "" else Bid.from_string(bid_input)
     client.bid(player_id, game_id, bid)
-if snapshot.player_action == PlayerAction.CHOOSE_PARTNER:
+if PlayerAction.CHOOSE_PARTNER in snapshot.player_actions:
     print("choose partner")
     partner_input = input() # AC for ace club, 2H for 2 heart, 10S for 10 spade
     client.choose_partner(player_id, game_id, Card.from_string(partner_input))
-if snapshot.player_action == PlayerAction.TRICK:
+if PlayerAction.TRICK in snapshot.player_actions:
     print("trick turn")
     trick_input = input() # AC for ace club, 2H for 2 heart, 10S for 10 spade
     client.trick(player_id, game_id, Card.from_string(trick_input))
-if snapshot.player_action is None:
-    # player stops polling for their game snapshot
-    print("ended")
+if PlayerAction.RESET in snapshot.player_actions:
+    print("reset")
+    reset_input = input() # y for yes
+    if reset_input == "y":
+        client.reset_game(player_id, game_id)
 ```

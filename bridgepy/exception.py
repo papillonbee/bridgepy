@@ -87,3 +87,11 @@ class BridgeGameNotFoundException(BizException):
 class GamePartnerNotChosenYetException(BizException):
     def __init__(self):
         super().__init__(10021, "Partner not chosen yet!")
+
+class GameNotConcludedYetException(BizException):
+    def __init__(self):
+        super().__init__(10022, "Game not concluded yet!")
+
+class GamePlayerAlreadyVotedResetException(BizException):
+    def __init__(self):
+        super().__init__(10023, "Game player already voted reset!")

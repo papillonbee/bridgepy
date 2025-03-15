@@ -64,9 +64,10 @@ class PlayerScore:
     player_id: PlayerId
     score: int
     won: bool = False
+    voted: bool = False
 
 class PlayerAction(str, Enum):
-    VIEW = "VIEW"
     BID = "BID"
     CHOOSE_PARTNER = "CHOOSE_PARTNER"
     TRICK = "TRICK"
+    RESET = "RESET"
