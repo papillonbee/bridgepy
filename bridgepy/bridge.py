@@ -29,7 +29,7 @@ class BridgeClient:
         game = self.find_game(game_id)
         return game.player_snapshot(player_id)
     
-    def bid(self, player_id: PlayerId, game_id: GameId, bid: Bid) -> None:
+    def bid(self, player_id: PlayerId, game_id: GameId, bid: Bid | None) -> None:
         game = self.find_game(game_id)
         game.bid(PlayerBid(player_id = player_id, bid = bid))
         self.game_datastore.update(game)
