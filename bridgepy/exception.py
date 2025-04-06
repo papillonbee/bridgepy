@@ -99,3 +99,7 @@ class GamePlayerAlreadyVotedResetException(BizException):
 class PlayerBidNotFoundException(BizException):
     def __init__(self):
         super().__init__(10024, "Player bid not found!")
+
+class GameBidWinnerNotFoundException(BizException):
+    def __init__(self):
+        super().__init__(10025, "Game bid winner not found!")

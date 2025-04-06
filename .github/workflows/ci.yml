@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+
+    strategy:
+      matrix:
+        python-version: ['3.10']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python3.10 -m pip install --upgrade pip
+          pip install coverage
+          pip3 install -e .
+
+      - name: Run coverage
+        run: |
+          coverage erase
+          coverage run -m unittest discover -s tests
+          coverage xml
+
+      - name: Comment coverage report
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}

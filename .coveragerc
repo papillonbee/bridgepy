@@ -1,0 +1,8 @@
+[run]
+relative_files = True
+source = bridgepy
+
+[report]
+omit =
+    tests/*
+    */__init__.py
