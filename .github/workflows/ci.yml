@@ -36,7 +36,7 @@ jobs:
       - name: Run coverage
         run: |
           coverage erase
-          coverage run --source=bridgepy -m unittest discover -s tests
+          coverage run -m unittest discover -s tests
           coverage xml
 
       - name: Comment coverage report
