@@ -5,7 +5,7 @@ from bridgepy.bid import Bid
 from bridgepy.card import Card, Deck, Suit
 from bridgepy.entity import Entity
 from bridgepy.exception import GameAlready4Players, GameAlreadyDealtException, GameAlreadyFinishedException,\
-    GameAuctionAlreadyFinishedException, GameAuctionNotFinishedException, GameInvalidBidException,\
+    GameAuctionAlreadyFinishedException, GameAuctionNotFinishedException, GameBidWinnerNotFoundException, GameInvalidBidException,\
     GameInvalidBidStateException, GameInvalidPlayerTrickException, GameInvalidTrickStateException, GameNotBidWinner,\
     GameNotConcludedYetException, GameNotPlayerBidTurnException, GameNotPlayerTrickTurnException,\
     GameNotReadyForTrickWinnerExcception, GameNotReadyToDealYetException, GamePartnerAlreadyChosenException,\
@@ -65,6 +65,11 @@ class GamePlayerSnapshot:
     tricks: list[GameTrick]
     scores: list[PlayerScore]
     player_turn: Optional[PlayerId]
+
+    def require_bid_winner(self) -> PlayerBid:
+        if self.bid_winner is None:
+            raise GameBidWinnerNotFoundException()
+        return self.bid_winner
 
 @dataclass
 class Game(Entity[GameId]):
