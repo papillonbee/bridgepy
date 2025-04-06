@@ -94,9 +94,12 @@ class TestPlayer(TestCase):
         game.add_player(PlayerId("333"))
         game.add_player(PlayerId("444"))
 
+        player_id = game.next_bid_player_id()
+        game.bid(PlayerBid(player_id = player_id, bid = Bid.from_string("1S")))
+
         with self.assertRaises(GameInvalidBidException):
             player_id = game.next_bid_player_id()
-            game.bid(PlayerBid(player_id = player_id, bid = None))
+            game.bid(PlayerBid(player_id = player_id, bid = Bid.from_string("1H")))
 
         player_id = game.next_bid_player_id()
         game.bid(PlayerBid(player_id = player_id, bid = Bid.from_string("1NT")))
