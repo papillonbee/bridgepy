@@ -4,7 +4,7 @@ from typing import Optional
 
 from bridgepy.bid import Bid
 from bridgepy.card import Card, Rank, Suit
-from bridgepy.exception import PlayerInvalidHandException
+from bridgepy.exception import PlayerBidNotFoundException, PlayerInvalidHandException
 
 @dataclass
 class PlayerId:
@@ -64,6 +64,11 @@ class PlayerHand:
 class PlayerBid:
     player_id: PlayerId
     bid: Optional[Bid]
+
+    def require_bid(self) -> Bid:
+        if self.bid is None:
+            raise PlayerBidNotFoundException()
+        return self.bid
 
 @dataclass
 class PlayerTrick:

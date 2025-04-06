@@ -95,3 +95,7 @@ class GameNotConcludedYetException(BizException):
 class GamePlayerAlreadyVotedResetException(BizException):
     def __init__(self):
         super().__init__(10023, "Game player already voted reset!")
+
+class PlayerBidNotFoundException(BizException):
+    def __init__(self):
+        super().__init__(10024, "Player bid not found!")
