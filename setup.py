@@ -24,7 +24,7 @@ setuptools.setup(
     ],
     keywords=[
         "floating bridge",
-        "singaporean brdige",
+        "singaporean bridge",
     ],
 )
 
