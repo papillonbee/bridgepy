@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="bridgepy",
-    version="0.0.11",
+    version="0.0.12",
     author="Papan Yongmalwong",
     author_email="papillonbee@gmail.com",
     description="bridgepy is a python package for playing floating bridge!",
@@ -27,3 +27,8 @@ setuptools.setup(
         "singaporean brdige",
     ],
 )
+
+# pip3 install -e .
+# pip3 install setuptools wheel twine
+# python3 setup.py sdist bdist_wheel
+# twine upload dist/*
