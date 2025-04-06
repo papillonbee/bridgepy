@@ -1,4 +1,4 @@
-name: Python test
+name: CI
 
 on:
   push:
@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
 
     strategy:
       matrix:
@@ -36,3 +39,5 @@ jobs:
 
       - name: Comment coverage report
         uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
