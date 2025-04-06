@@ -55,7 +55,7 @@ class Suit(str, Enum):
             return NotImplemented
         return _suit_order[self.value] == _suit_order[other.value]
 
-_suit_order = {rank.value: i for i, rank in enumerate(Suit)}
+_suit_order = {suit.value: i for i, suit in enumerate(Suit)}
 
 @total_ordering
 @dataclass

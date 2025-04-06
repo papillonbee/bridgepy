@@ -112,7 +112,7 @@ class Game(Entity[GameId]):
             game_id = self.id,
             player_id = player_id,
             player_actions = player_actions,
-            player_hand = self.__find_player_hand(player_id),
+            player_hand = self.find_player_hand(player_id),
             bids = self.bids,
             bid_winner = bid_winner,
             partner = self.partner,
@@ -122,7 +122,7 @@ class Game(Entity[GameId]):
             player_turn = player_turn,
         )
     
-    def __find_player_hand(self, player_id: PlayerId) -> PlayerHand:
+    def find_player_hand(self, player_id: PlayerId) -> PlayerHand:
         for player_hand in self.player_hands:
             if player_hand.player_id == player_id:
                 return player_hand
@@ -201,7 +201,7 @@ class Game(Entity[GameId]):
             raise GameInvalidBidException()
         self.bids.append(player_bid)
         if self.__all_players_pass():
-            self.__reset_game()
+            self.reset_game()
     
     def __all_players_pass(self) -> bool:
         return len(self.bids) == 4 and all([player_bid.bid is None for player_bid in self.bids])
@@ -257,7 +257,7 @@ class Game(Entity[GameId]):
             raise GameInvalidPlayerTrickException()
         if self.__partner_revealed(player_trick):
             self.partner_player_id = player_trick.player_id
-        self.__find_player_hand(player_trick.player_id).cards.remove(player_trick.trick)
+        self.find_player_hand(player_trick.player_id).cards.remove(player_trick.trick)
         if len(self.tricks) == 0:
             self.tricks.append(GameTrick(player_tricks = [player_trick]))
             return
@@ -273,7 +273,7 @@ class Game(Entity[GameId]):
         return player_trick.trick == self.partner
 
     def __valid_player_trick(self, player_trick: PlayerTrick) -> bool:
-        player_hand: PlayerHand = self.__find_player_hand(player_trick.player_id)
+        player_hand: PlayerHand = self.find_player_hand(player_trick.player_id)
         trick_from_player_hand = player_trick.trick in player_hand.cards
         if not trick_from_player_hand:
             return False
@@ -292,7 +292,7 @@ class Game(Entity[GameId]):
         return len(first_suit_cards) == 0
         
     def __can_trump(self, player_id: PlayerId) -> bool:
-        player_hand: PlayerHand = self.__find_player_hand(player_id)
+        player_hand: PlayerHand = self.find_player_hand(player_id)
         trump_suit: Suit | None = self.trump_suit()
         trump_cards = [card.suit == trump_suit for card in player_hand.cards]
         if len(trump_cards) == 0:
@@ -373,7 +373,7 @@ class Game(Entity[GameId]):
             raise GamePlayerAlreadyVotedResetException()
         self.reset_votes = list(set(self.reset_votes).union({player_id}))
         if len(self.reset_votes) == 4:
-            self.__reset_game()
+            self.reset_game()
     
     def game_concluded(self) -> bool:
         player_scores: list[PlayerScore] = self.scores()
@@ -382,7 +382,7 @@ class Game(Entity[GameId]):
     def __game_concluded(self, player_scores: list[PlayerScore]) -> bool:
         return any([player_score.won for player_score in player_scores])
     
-    def __reset_game(self) -> None:
+    def reset_game(self) -> None:
         self.reset_votes.clear()
         self.player_hands.clear()
         self.bids.clear()
