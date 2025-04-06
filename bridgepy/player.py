@@ -24,15 +24,6 @@ class PlayerHand:
     def points(self) -> int:
         self.__validate(self.cards)
         points: int = 0
-        for card in self.cards:
-            if card.rank == Rank.ACE:
-                points += 4
-            if card.rank == Rank.KING:
-                points += 3
-            if card.rank == Rank.QUEEN:
-                points += 2
-            if card.rank == Rank.JACK:
-                points += 1
         points += self.__calculate_points_by_suit(Suit.CLUB)
         points += self.__calculate_points_by_suit(Suit.DIAMOND)
         points += self.__calculate_points_by_suit(Suit.HEART)
@@ -44,10 +35,30 @@ class PlayerHand:
             raise PlayerInvalidHandException()
     
     def __calculate_points_by_suit(self, suit: Suit) -> int:
-        return max(0, self.__count_cards_by_suit(suit) - 4)
+        return max(0, self.__count_cards_by_suit(suit) - 4) + self.__calculate_high_card_points_by_suit(suit)
 
     def __count_cards_by_suit(self, suit: Suit) -> int:
-        return len([card for card in self.cards if card.suit == suit])
+        return len(self.__get_cards_by_suit(suit))
+    
+    def __get_cards_by_suit(self, suit: Suit) -> list[Card]:
+        return [card for card in self.cards if card.suit == suit]
+    
+    def __calculate_high_card_points_by_suit(self, suit: Suit) -> int:
+        points: int = 0
+        for card in self.__get_cards_by_suit(suit):
+            if card.rank == Rank.ACE:
+                points += 4
+            if card.rank == Rank.KING:
+                points += 3
+            if card.rank == Rank.QUEEN:
+                points += 2
+            if card.rank == Rank.JACK:
+                points += 1
+        return points
+
+    def points_by_suit(self, suit: Suit) -> int:
+        self.__validate(self.cards)
+        return self.__calculate_points_by_suit(suit)
 
 @dataclass
 class PlayerBid:
